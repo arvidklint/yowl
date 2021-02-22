@@ -1,0 +1,20 @@
+@import 'colors';
+@import 'typography';
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+  font-family: 'Gotham Rounded Bold';
+  background: var(--color-background-gradient);
+  color: var(--color-text);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+* {
+  box-sizing: border-box;
+}
