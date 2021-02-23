@@ -7,7 +7,7 @@ export default function Home() {
       <div className={containerClasses}>
         <h1 className="text-9xl">Yowl</h1>
         <button className={buttonClasses}>
-          <span className="text-2xl tracking-widest">Start</span>
+          <span className="text-2xl tracking-widest">Start listening</span>
         </button>
       </div>
     </Page>
@@ -24,12 +24,11 @@ const containerClasses = cn(
 
 const buttonClasses = cn(
   'rounded-full',
-  'bg-indigo-500',
+  'bg-indigo-700',
   'w-80',
-  'h-80',
+  'p-2',
   'shadow-md',
-  'border-8',
-  'border-indigo-700',
   'transition-all',
-  'hover:shadow-2xl'
+  'hover:shadow-2xl',
+  'hover:bg-indigo-600'
 )
