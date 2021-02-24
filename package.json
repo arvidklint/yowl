@@ -5,14 +5,17 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "peer": "peerjs --port 9000 --key peerjs --path /yowl"
   },
   "dependencies": {
     "classnames": "^2.2.6",
     "next": "10.0.7",
+    "peer": "^0.6.1",
     "peerjs": "^1.3.1",
     "react": "17.0.1",
-    "react-dom": "17.0.1"
+    "react-dom": "17.0.1",
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
     "autoprefixer": "^10.2.4",

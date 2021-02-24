@@ -1,14 +1,16 @@
 import cn from 'classnames'
+
+import { isBrowser } from '../utils/browser'
+
 import Page from '../components/page'
+import Yowl from '../components/yowl'
 
 export default function Home() {
   return (
     <Page>
       <div className={containerClasses}>
         <h1 className="text-9xl">Yowl</h1>
-        <button className={buttonClasses}>
-          <span className="text-2xl tracking-widest">Start listening</span>
-        </button>
+        {isBrowser() && <Yowl />}
       </div>
     </Page>
   )
@@ -20,15 +22,4 @@ const containerClasses = cn(
   'justify-center',
   'items-center',
   'h-screen'
-)
-
-const buttonClasses = cn(
-  'rounded-full',
-  'bg-indigo-700',
-  'w-80',
-  'p-2',
-  'shadow-md',
-  'transition-all',
-  'hover:shadow-2xl',
-  'hover:bg-indigo-600'
 )
