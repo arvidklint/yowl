@@ -11,5 +11,5 @@ export default function Video({ srcObject, ...props }) {
     })
   }, [srcObject])
 
-  return <video ref={refVideo} className="h-32" {...props} />
+  return <video ref={refVideo} className="w-full rounded-lg" {...props} />
 }
