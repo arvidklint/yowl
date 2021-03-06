@@ -6,11 +6,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "peer": "peerjs --port 9000 --key peerjs --path /yowl"
+    "peer:dev": "nodemon server.js",
+    "peer": "node server.js"
   },
   "dependencies": {
     "@xstate/react": "^1.3.1",
     "classnames": "^2.2.6",
+    "express": "^4.17.1",
     "next": "10.0.7",
     "peer": "^0.6.1",
     "peerjs": "^1.3.1",
@@ -25,6 +27,7 @@
     "eslint": "^7.20.0",
     "eslint-config-prettier": "^8.0.0",
     "eslint-plugin-react": "^7.22.0",
+    "nodemon": "^2.0.7",
     "postcss": "^8.2.6",
     "prettier": "2.2.1",
     "sass": "^1.32.8",

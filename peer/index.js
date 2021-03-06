@@ -10,7 +10,7 @@ function setup() {
   id = uuidv4()
   return new Peer(id, {
     host: 'localhost',
-    port: 9000,
+    port: 3001,
     path: '/yowl',
   })
 }
