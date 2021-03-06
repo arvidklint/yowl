@@ -1,76 +1,68 @@
-import { useEffect, useState } from 'react'
-import { Machine } from 'xstate'
-import { useMachine } from '@xstate/react'
+import { Component } from 'react'
+import { interpret } from 'xstate'
 
-import { setupListener } from '../../peer'
+import ListenerMachine, { S, T } from '../../machines/listener'
 
-import Video from './video'
 import QR from './qr'
+import Button from '../common/button'
+import Video from '../yowl/video'
 
-const S = {
-  init: 'init',
-  connecting: 'connecting',
-  waiting: 'waiting',
-  listening: 'listening',
-  error: 'error',
-}
+export default class Listener extends Component {
+  state = {
+    current: null,
+  }
+  service = null
 
-const machine = Machine({
-  initial: S.init,
-  states: {
-    [S.init]: {
-      on: {
-        START: S.connecting,
-      },
-    },
-    [S.connecting]: {
-      invoke: {
-        src: 'connect',
-        onDone: { target: S.waiting },
-      },
-    },
-    [S.waiting]: {
-      on: {
-        LISTEN: S.listening,
-      },
-    },
-    [S.listening]: {
-      // TODO: Close
-    },
-    [S.error]: {},
-  },
-})
+  constructor(props) {
+    super(props)
 
-export default function Listener() {
-  const [myID, setMyID] = useState(null)
-  const [remoteStream, setRemoteStream] = useState(null)
+    const machine = ListenerMachine()
+    this.state = {
+      current: machine.initialState,
+    }
 
-  const addRemoteStream = (rs) => {
-    setRemoteStream(rs)
-    send('LISTEN')
+    this.service = interpret(machine).onTransition((current) => {
+      this.setState({ current })
+    })
   }
 
-  const connect = async () => {
-    setMyID(setupListener(addRemoteStream))
+  componentDidMount() {
+    this.service.start()
+
+    this.service.send(T.START)
   }
 
-  const [state, send] = useMachine(machine, {
-    services: {
-      connect,
-    },
-  })
+  componentWillUnmount() {
+    this.service.stop()
+  }
 
-  useEffect(() => {
-    if (state.matches(S.init)) send('START')
-  })
+  render() {
+    const { current } = this.state
+    const { send } = this.service
 
-  return (
-    <div className="p-4">
-      {state.matches(S.waiting) && (
-        <QR value={`http://localhost:3000/sender/${myID}`} />
-      )}
-      Remote stream
-      {state.matches(S.listening) && <Video srcObject={remoteStream} />}
-    </div>
-  )
+    return (
+      <div className="p-4">
+        <div>{current.value}</div>
+        {current.matches(S.waiting) && (
+          <QR
+            value={`${window.location.origin}/sender/${current.context.id}`}
+          />
+        )}
+        Remote stream
+        {current.matches(S.listening) && (
+          <>
+            <Video srcObject={current.context.stream} />
+            <Button
+              onClick={() => {
+                console.log('click close')
+                send(T.CLOSE)
+              }}
+            >
+              Close
+            </Button>
+          </>
+        )}
+      </div>
+    )
+  }
 }

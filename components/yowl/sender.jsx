@@ -1,92 +1,60 @@
-import { useState, useEffect } from 'react'
-import { Machine } from 'xstate'
+import { Component } from 'react'
+import { v4 as uuidv4 } from 'uuid'
+import { interpret } from 'xstate'
 
-import { useMachine } from '@xstate/react'
+import SenderMachine, { S, T } from '../../machines/sender'
 
-import { sendStream, getUserMedia, setupSender } from '../../peer'
-
-const S = {
-  init: 'init',
-  gettingUserMedia: 'gettingUserMedia',
-  connecting: 'connecting',
-  calling: 'calling',
-  sending: 'sending',
-  error: 'error',
+const loadingTexts = {
+  [S.init]: 'Hello',
+  [S.gettingUserMedia]: 'Not Connected',
+  [S.connecting]: 'Connecting...',
+  [S.calling]: 'Calling',
+  [S.sending]: 'Sending',
+  [S.noAnswer]: 'No Answer',
+  [S.finished]: 'Done.',
+  [S.failure]: 'Error',
 }
 
-const machine = Machine({
-  initial: S.init,
-  states: {
-    [S.init]: {
-      on: {
-        START: S.gettingUserMedia,
-      },
-    },
-    [S.gettingUserMedia]: {
-      invoke: {
-        src: 'getStream',
-        onDone: { target: S.connecting },
-        onError: { target: S.error },
-      },
-    },
-    [S.connecting]: {
-      invoke: {
-        src: 'connect',
-        onDone: { target: S.calling },
-      },
-    },
-    [S.calling]: {
-      invoke: {
-        src: 'call',
-        onDone: { target: S.sending },
-      },
-    },
-    [S.sending]: {
-      // TODO: Close
-    },
-    [S.error]: {},
-  },
-})
+export default class Sender extends Component {
+  state = {
+    current: null,
+  }
+  service = null
 
-export default function Sender({ peerID }) {
-  const [myStream, setMyStream] = useState(null)
+  constructor(props) {
+    super(props)
 
-  const getStream = async () => {
-    try {
-      const s = await getUserMedia({ video: true, audio: false })
-      setMyStream(s)
-    } catch (e) {
-      console.error(e)
+    const machine = SenderMachine(props.peerID)
+    this.state = {
+      current: machine.initialState,
     }
+
+    this.service = interpret(machine).onTransition((current) => {
+      this.setState({ current })
+    })
   }
 
-  const connect = async () => {
-    setupSender()
+  componentDidMount() {
+    this.service.start()
+
+    this.service.send(T.START)
   }
 
-  const call = async () => {
-    await sendStream(peerID, myStream)
+  componentWillUnmount() {
+    this.service.stop()
   }
 
-  const [state, send] = useMachine(machine, {
-    services: {
-      getStream,
-      connect,
-      call,
-    },
-  })
+  render() {
+    const { current } = this.state
 
-  useEffect(() => {
-    if (state.matches(S.init)) send('START')
-  }, [])
-
-  const loadingTexts = {
-    [S.init]: 'Hello',
-    [S.gettingUserMedia]: 'Not Connected',
-    [S.connecting]: 'Connecting...',
-    [S.calling]: 'Sending',
-    [S.error]: 'Error',
+    return (
+      <div className="relative">
+        <h1>{loadingTexts[current?.value] || ''}</h1>
+        {current.matches(S.failure) && (
+          <h2 className="text-red-400">{current.context.errorMessage}</h2>
+        )}
+        <h3 className="absolute top-0 right-0">{current.context.id}</h3>
+      </div>
+    )
   }
-
-  return <h1>{loadingTexts[state.value] || ''}</h1>
 }
